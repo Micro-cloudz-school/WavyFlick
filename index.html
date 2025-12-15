@@ -77,14 +77,14 @@ async function readSerialLoop() {
     const cube = new THREE.Mesh(geometry, material);
     scene.add(cube);
 
-    camera.position.z = 3;
+    camera.position.z = 4.6;
 
     // animation loop
     function animate() {
       requestAnimationFrame(animate);
 
       // update cube position based on serial value
-      cube.position.x = serialValue*0.5; // scale if needed
+      cube.position.y = serialValue*0.1; // scale if needed
       cube.rotation.x += 0.01;
       cube.rotation.y += 0.01;
 
