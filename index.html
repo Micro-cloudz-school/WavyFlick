@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Three.js Serial Cube</title>
+  <title>WavyFlick</title>
   <style>
     body { margin: 0; overflow: hidden; }
     canvas { display: block; }
@@ -84,7 +84,7 @@ async function readSerialLoop() {
       requestAnimationFrame(animate);
 
       // update cube position based on serial value
-      cube.position.y = serialValue*0.1; // scale if needed
+      cube.position.y = serialValue*0.2; // scale if needed
       cube.rotation.x += 0.01;
       cube.rotation.y += 0.01;
 
