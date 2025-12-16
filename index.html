@@ -17,6 +17,10 @@
     let port;
     let reader;
     let serialValue = 0;
+    
+    let roll = 0;
+    let pitch = 0;
+
 
     async function connectSerial() {
       try {
@@ -49,16 +53,29 @@ async function readSerialLoop() {
       serialBuffer = lines.pop();
       
       for (let line of lines) {
-        const num = parseFloat(line.trim());
-        if (!isNaN(num)) {
-          serialValue = num;
-          document.getElementById("chkn").innerText = serialValue;
+        const parts = line.trim().split(",");
+
+if (parts.length === 2) {
+  const r = parseFloat(parts[0]);
+  const p = parseFloat(parts[1]);
+
+  if (!isNaN(r) && !isNaN(p)) {
+    roll = r;
+    pitch = p;
+
+    document.getElementById("chkn").innerText =
+      `Roll: ${roll.toFixed(2)} | Pitch: ${pitch.toFixed(2)}`;
+
+    console.log("Roll:", roll, "Pitch:", pitch);
+  }
+}
+
           console.log("Serial:", serialValue);
         }
       }
     }
   }
-}
+
 
     // Three.js setup
     const scene = new THREE.Scene();
@@ -84,7 +101,9 @@ async function readSerialLoop() {
       requestAnimationFrame(animate);
 
       // update cube position based on serial value
-      cube.position.y = serialValue*0.2; // scale if needed
+      cube.rotation.z = roll * 0.05;   // roll = tilt left/right
+cube.rotation.x = pitch * 0.05;  // pitch = tilt forward/back
+
       cube.rotation.x += 0.01;
       cube.rotation.y += 0.01;
 
