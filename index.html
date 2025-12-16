@@ -101,8 +101,8 @@ if (parts.length === 2) {
       requestAnimationFrame(animate);
 
       // update cube position based on serial value
-      cube.rotation.z = roll * 0.05;   // roll = tilt left/right
-cube.rotation.x = pitch * 0.05;  // pitch = tilt forward/back
+      cube.rotation.x = roll * 0.05;   // roll = tilt left/right
+cube.rotation.z = pitch * 0.05;  // pitch = tilt forward/back
 
       renderer.render(scene, camera);
     }
