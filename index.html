@@ -89,16 +89,27 @@ if (parts.length === 2) {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshNormalMaterial();
+    const geometry = new THREE.TorusKnotGeometry(1, 0.3, 100, 16, 3, 5);
+    const material = new THREE.MeshStandardMaterial({ color: 0x97EFFC, emissive: 0xFFFFFF,
+emissiveIntensity: 0.1});
     const cube = new THREE.Mesh(geometry, material);
     scene.add(cube);
 
     camera.position.z = 4.6;
+    
+    const light = new THREE.DirectionalLight(0xffffff, 5);
+light.position.set(5, 5, 5);
+scene.add(light);
+
+const ambientLight = new THREE.AmbientLight(0x404040, 0.5); // soft ambient light
+scene.add(ambientLight);
+
 
     // animation loop
     function animate() {
       requestAnimationFrame(animate);
+const t = Date.now() * 0.001;
+cube.material.color.setHSL((Math.sin(t) + 1)/2, 0.5, 0.5);
 
       // update cube position based on serial value
       cube.rotation.x = roll * 0.05;   // roll = tilt left/right
