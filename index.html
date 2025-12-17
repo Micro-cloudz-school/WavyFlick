@@ -1,141 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>WavyFlick</title>
   <style>
     body { margin: 0; overflow: hidden; }
-    canvas { display: block; }
+    button { position: absolute; z-index: 10; }
+    h1 { position: absolute; top: 40px; z-index: 10; color: white; }
   </style>
 </head>
+
 <body>
   <button onclick="connectSerial()">Connect Serial</button>
   <h1 id="chkn">No values yet</h1>
 
-  <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
-  <script>
-    import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+  <script type="module">
+    import * as THREE from 'https://unpkg.com/three@0.158.0/build/three.module.js';
+    import { GLTFLoader } from 'https://unpkg.com/three@0.158.0/examples/jsm/loaders/GLTFLoader.js';
 
-    let port;
-    let reader;
-    let serialValue = 0;
-    
     let roll = 0;
     let pitch = 0;
 
-
-    async function connectSerial() {
-      try {
-        port = await navigator.serial.requestPort();
-        await port.open({ baudRate: 9600 });
-
-        const decoder = new TextDecoderStream();
-        port.readable.pipeTo(decoder.writable);
-
-        reader = decoder.readable.getReader();
-        readSerialLoop();
-      } catch (err) {
-        console.error("Serial connection failed:", err);
-      }
-    }
-
-   let serialBuffer = "";
-
-async function readSerialLoop() {
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    if (value) {
-      serialBuffer += value;
-      
-      // check for full lines
-      let lines = serialBuffer.split("\n");
-      
-      // keep the last partial line in the buffer
-      serialBuffer = lines.pop();
-      
-      for (let line of lines) {
-        const parts = line.trim().split(",");
-
-if (parts.length === 2) {
-  const r = parseFloat(parts[0]);
-  const p = parseFloat(parts[1]);
-
-  if (!isNaN(r) && !isNaN(p)) {
-    roll = r;
-    pitch = p;
-
-    document.getElementById("chkn").innerText =
-      `Roll: ${roll.toFixed(2)} | Pitch: ${pitch.toFixed(2)}`;
-
-    console.log("Roll:", roll, "Pitch:", pitch);
-  }
-}
-
-          console.log("Serial:", serialValue);
-        }
-      }
-    }
-  }
-
-
-    // Three.js setup
+    // === THREE.JS ===
     const scene = new THREE.Scene();
+
     const camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
       0.1,
       1000
     );
-    const renderer = new THREE.WebGLRenderer();
+    camera.position.z = 5;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshNormalMaterial();
-    const cube = new THREE.Mesh(geometry, material);
+    // Cube (backup visual so you SEE something)
+    const cube = new THREE.Mesh(
+      new THREE.BoxGeometry(),
+      new THREE.MeshNormalMaterial()
+    );
     scene.add(cube);
 
-    camera.position.z = 4.6;
-
+    // === MODEL ===
     const loader = new GLTFLoader();
-loader.load(
-    // resource URL
-    'models/Untitled 1666202-Mesh 1907974.zip',
-    // called when the resource is loaded
-    function ( gltf ) {
-        scene.add( gltf.scene );
-    },
-    // called while loading is progressing
-    function ( xhr ) {
-        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-    },
-    // called when loading has errors
-    function ( error ) {
-        console.error( 'An error happened', error );
-    }
-);
+    loader.load(
+      'models/model.glb', // 👈 USE A .glb FILE
+      (gltf) => {
+        gltf.scene.scale.set(1, 1, 1);
+        scene.add(gltf.scene);
+      },
+      undefined,
+      (error) => console.error(error)
+    );
 
-
-    // animation loop
+    // === ANIMATE ===
     function animate() {
       requestAnimationFrame(animate);
 
-      // update cube position based on serial value
-      cube.rotation.x = roll * 0.05;   // roll = tilt left/right
-cube.rotation.z = pitch * 0.05;  // pitch = tilt forward/back
+      cube.rotation.x = roll * 0.05;
+      cube.rotation.z = pitch * 0.05;
 
       renderer.render(scene, camera);
     }
-
     animate();
 
-    // handle window resize
+    // Resize
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
+
+    // === SERIAL (must be HTTPS or localhost!) ===
+    let port, reader, serialBuffer = "";
+
+    window.connectSerial = async function () {
+      port = await navigator.serial.requestPort();
+      await port.open({ baudRate: 9600 });
+
+      const decoder = new TextDecoderStream();
+      port.readable.pipeTo(decoder.writable);
+      reader = decoder.readable.getReader();
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        serialBuffer += value;
+
+        let lines = serialBuffer.split("\n");
+        serialBuffer = lines.pop();
+
+        for (let line of lines) {
+          const parts = line.trim().split(",");
+          if (parts.length === 2) {
+            roll = parseFloat(parts[0]);
+            pitch = parseFloat(parts[1]);
+
+            document.getElementById("chkn").innerText =
+              `Roll: ${roll.toFixed(2)} | Pitch: ${pitch.toFixed(2)}`;
+          }
+        }
+      }
+    };
   </script>
 </body>
 </html>
