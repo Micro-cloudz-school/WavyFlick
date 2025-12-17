@@ -37,16 +37,14 @@
 
   <script type="module">
     import * as THREE from 'https://unpkg.com/three@0.158.0/build/three.module.js';
+    import { GLTFLoader } from 'https://unpkg.com/three@0.158.0/examples/jsm/loaders/GLTFLoader.js';
 
-    // ===== VALUES =====
     let roll = 0;
     let pitch = 0;
 
-    // ===== SCENE =====
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
 
-    // ===== CAMERA =====
     const camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
@@ -56,28 +54,54 @@
     camera.position.set(0, 0, 5);
     camera.lookAt(0, 0, 0);
 
-    // ===== RENDERER =====
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // ===== TEST CUBE (CAN'T FAIL) =====
-    const cube = new THREE.Mesh(
-      new THREE.BoxGeometry(1, 1, 1),
-      new THREE.MeshBasicMaterial({ color: 0xff0000 })
+    // ===== LIGHTS =====
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight.position.set(5, 5, 5);
+    scene.add(dirLight);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+
+    // ===== LOAD YOUR GLB =====
+    const loader = new GLTFLoader();
+    let model; // store the loaded model
+
+    loader.load(
+      'models/25_12_17_15_34_21_583.glb', // <-- your file
+      (gltf) => {
+        model = gltf.scene;
+
+        // auto-scale and center
+        const box = new THREE.Box3().setFromObject(model);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z);
+        model.scale.setScalar(2 / maxDim); // scale to ~2 units
+
+        // center it
+        box.getCenter(size);
+        model.position.sub(size);
+
+        scene.add(model);
+      },
+      undefined,
+      (error) => console.error('Error loading GLB:', error)
     );
-    scene.add(cube);
 
     // ===== ANIMATE =====
     function animate() {
       requestAnimationFrame(animate);
 
-      // auto spin so you KNOW it's alive
-      cube.rotation.y += 0.01;
+      if (model) {
+        // serial rotation
+        model.rotation.x = roll * 0.05;
+        model.rotation.z = pitch * 0.05;
 
-      // serial control
-      cube.rotation.x = roll * 0.05;
-      cube.rotation.z = pitch * 0.05;
+        // optional continuous spin
+        // model.rotation.y += 0.01;
+      }
 
       renderer.render(scene, camera);
     }
