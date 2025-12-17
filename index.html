@@ -3,10 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <title>WavyFlick</title>
+
   <style>
-    body { margin: 0; overflow: hidden; }
-    button { position: absolute; z-index: 10; }
-    h1 { position: absolute; top: 40px; z-index: 10; color: white; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    button, h1 {
+      position: relative;
+      z-index: 10;
+      color: white;
+      font-family: sans-serif;
+    }
+
+    h1 {
+      margin-top: 40px;
+    }
   </style>
 </head>
 
@@ -16,49 +37,45 @@
 
   <script type="module">
     import * as THREE from 'https://unpkg.com/three@0.158.0/build/three.module.js';
-    import { GLTFLoader } from 'https://unpkg.com/three@0.158.0/examples/jsm/loaders/GLTFLoader.js';
 
+    // ===== VALUES =====
     let roll = 0;
     let pitch = 0;
 
-    // === THREE.JS ===
+    // ===== SCENE =====
     const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
 
+    // ===== CAMERA =====
     const camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
       0.1,
       1000
     );
-    camera.position.z = 5;
+    camera.position.set(0, 0, 5);
+    camera.lookAt(0, 0, 0);
 
+    // ===== RENDERER =====
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Cube (backup visual so you SEE something)
+    // ===== TEST CUBE (CAN'T FAIL) =====
     const cube = new THREE.Mesh(
-      new THREE.BoxGeometry(),
-      new THREE.MeshNormalMaterial()
+      new THREE.BoxGeometry(1, 1, 1),
+      new THREE.MeshBasicMaterial({ color: 0xff0000 })
     );
     scene.add(cube);
 
-    // === MODEL ===
-    const loader = new GLTFLoader();
-    loader.load(
-      'models/25_12_17_15_34_21_583.glb', // 👈 USE A .glb FILE
-      (gltf) => {
-        gltf.scene.scale.set(1, 1, 1);
-        scene.add(gltf.scene);
-      },
-      undefined,
-      (error) => console.error(error)
-    );
-
-    // === ANIMATE ===
+    // ===== ANIMATE =====
     function animate() {
       requestAnimationFrame(animate);
 
+      // auto spin so you KNOW it's alive
+      cube.rotation.y += 0.01;
+
+      // serial control
       cube.rotation.x = roll * 0.05;
       cube.rotation.z = pitch * 0.05;
 
@@ -66,14 +83,14 @@
     }
     animate();
 
-    // Resize
+    // ===== RESIZE =====
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // === SERIAL (must be HTTPS or localhost!) ===
+    // ===== SERIAL =====
     let port, reader, serialBuffer = "";
 
     window.connectSerial = async function () {
@@ -87,9 +104,9 @@
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        serialBuffer += value;
 
-        let lines = serialBuffer.split("\n");
+        serialBuffer += value;
+        const lines = serialBuffer.split("\n");
         serialBuffer = lines.pop();
 
         for (let line of lines) {
