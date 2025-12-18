@@ -115,6 +115,13 @@ const sphereMat = new THREE.MeshStandardMaterial({
 const sphere = new THREE.Mesh(sphereGeo, sphereMat);
 sphere.position.y = 3;
 scene.add(sphere);
+  const bodysphereGeo = new THREE.SphereGeometry(1.6, 32, 32);
+const sphereMat2 = new THREE.MeshStandardMaterial({
+  map: sphereTexture
+});
+  const sphere2 = new THREE.Mesh(bodysphereGeo, sphereMat2);
+sphere2.position.y = 0;
+scene.add(sphere2);
 
 /* ===== ANIMATE ===== */
 function animate() {
