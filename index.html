@@ -113,15 +113,23 @@ const sphereMat = new THREE.MeshStandardMaterial({
   map: sphereTexture
 });
 const sphere = new THREE.Mesh(sphereGeo, sphereMat);
-sphere.position.y = 3;
+sphere.position.y = 2.3;
 scene.add(sphere);
   const bodysphereGeo = new THREE.SphereGeometry(1.6, 32, 32);
 const sphereMat2 = new THREE.MeshStandardMaterial({
-  map: sphereTexture
+  
 });
   const sphere2 = new THREE.Mesh(bodysphereGeo, sphereMat2);
 sphere2.position.y = 0;
 scene.add(sphere2);
+  
+  const basesphereGeo = new THREE.SphereGeometry(2, 32, 32);
+const sphereMat3 = new THREE.MeshStandardMaterial({
+  
+});
+  const sphere3 = new THREE.Mesh(basesphereGeo, sphereMat3);
+sphere3.position.y = -2.5;
+scene.add(sphere3);
 
 /* ===== ANIMATE ===== */
 function animate() {
@@ -131,10 +139,10 @@ function animate() {
   knot.material.color.setHSL((Math.sin(t) + 1) / 2, 0.6, 0.5);
 
   // Sensor control
-  knot.rotation.x = roll * 0.05;
+  knot.rotation.x = -roll * 0.05;
   knot.rotation.z = pitch * 0.05;
 
-  sphere.rotation.x = roll * 0.05;
+  sphere.rotation.x = -roll * 0.05;
   sphere.rotation.z = pitch * 0.05;
 
   renderer.render(scene, camera);
